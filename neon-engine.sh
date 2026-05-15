@@ -15,6 +15,7 @@ BASE_URL="https://raw.githubusercontent.com/Magisk-Modules-Repo/busybox-ndk/mast
 LOCAL_ENGINE="$HOME/.neon-core-engine"
 PUBLIC_ENGINE="/sdcard/Download/.neon-core-engine"
 SETUP_FILE="/sdcard/Download/neon-core-setup.sh"
+START_FILE="/sdcard/Download/neon-core-start.sh"
 RUN_CMD="sh /sdcard/Download/neon-core-setup.sh"
 
 line() {
@@ -124,7 +125,7 @@ cd "$HOME" || exit 1
 rm -f "$LOCAL_ENGINE"
 rm -f "$PUBLIC_ENGINE"
 rm -f "$SETUP_FILE"
-rm -f /sdcard/Download/neon-core-start.sh
+rm -f "$START_FILE"
 
 printf "$G[✓] Clean install ready$N\n\n"
 
@@ -310,13 +311,13 @@ SETUPEOF
 
 chmod 755 "$SETUP_FILE"
 
-cat > /sdcard/Download/neon-core-start.sh << 'STARTEOF'
+cat > "$START_FILE" << 'STARTEOF'
 #!/system/bin/sh
 . /data/local/tmp/neon-core/env.sh
 neon shell
 STARTEOF
 
-chmod 755 /sdcard/Download/neon-core-start.sh
+chmod 755 "$START_FILE"
 
 if command -v termux-clipboard-set >/dev/null 2>&1; then
   printf "%s" "$RUN_CMD" | termux-clipboard-set
@@ -348,11 +349,18 @@ printf "$W    $SETUP_FILE$N\n\n"
 
 printf "$Y"
 printf "╔════════════════════════════════════════════╗\n"
-printf "║       RUN THIS IN NEON CORE ENGINE         ║\n"
+printf "║       COPY COMMAND BELOW                   ║\n"
+printf "║       RUN IN NEON CORE ENGINE              ║\n"
 printf "╚════════════════════════════════════════════╝\n"
 printf "$N\n"
 
-printf "$C$RUN_CMD$N\n\n"
+printf "$W"
+printf "┌────────────────────────────────────────────┐\n"
+printf "│ %s │\n" "$RUN_CMD"
+printf "└────────────────────────────────────────────┘\n"
+printf "$N\n"
+
+printf "$C%s$N\n\n" "$RUN_CMD"
 
 if [ "$CLIP_STATUS" = "copied" ]; then
   printf "$G[✓] Command sudah dicopy ke clipboard.$N\n"
