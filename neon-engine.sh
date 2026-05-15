@@ -15,7 +15,6 @@ BASE_URL="https://raw.githubusercontent.com/Magisk-Modules-Repo/busybox-ndk/mast
 LOCAL_ENGINE="$HOME/.neon-core-engine"
 PUBLIC_ENGINE="/sdcard/Download/.neon-core-engine"
 SETUP_FILE="/sdcard/Download/neon-core-setup.sh"
-START_FILE="/sdcard/Download/neon-core-start.sh"
 RUN_CMD="sh /sdcard/Download/neon-core-setup.sh"
 
 line() {
@@ -38,6 +37,7 @@ EOF
 
 banner
 printf "\n"
+
 printf "$Y"
 printf "╔════════════════════════════════════════════╗\n"
 printf "║          NEON ENGINE INSTALLER            ║\n"
@@ -101,17 +101,14 @@ line
 
 printf "$B[3/6] Checking downloader...$N\n"
 
-DOWNLOADER=""
-
 if command -v curl >/dev/null 2>&1; then
   DOWNLOADER="curl"
 elif command -v wget >/dev/null 2>&1; then
   DOWNLOADER="wget"
 else
   printf "$R[!] Downloader tidak ditemukan.$N\n"
-  printf "$Y[!] Jalankan salah satu command ini:$N\n"
+  printf "$Y[!] Jalankan:$N\n"
   printf "$W    pkg install curl -y$N\n"
-  printf "$W    pkg install wget -y$N\n"
   exit 1
 fi
 
@@ -127,7 +124,7 @@ cd "$HOME" || exit 1
 rm -f "$LOCAL_ENGINE"
 rm -f "$PUBLIC_ENGINE"
 rm -f "$SETUP_FILE"
-rm -f "$START_FILE"
+rm -f /sdcard/Download/neon-core-start.sh
 
 printf "$G[✓] Clean install ready$N\n\n"
 
@@ -139,7 +136,7 @@ printf "$B[5/6] Downloading Neon Core Engine package...$N\n"
 DOWNLOAD_URL="$BASE_URL/$ENGINE_FILE"
 
 if [ "$DOWNLOADER" = "curl" ]; then
-  curl -L --progress-bar "$DOWNLOAD_URL" -o "$LOCAL_ENGINE"
+  curl -L --fail --progress-bar "$DOWNLOAD_URL" -o "$LOCAL_ENGINE"
 else
   wget -q --show-progress -O "$LOCAL_ENGINE" "$DOWNLOAD_URL"
 fi
@@ -152,9 +149,9 @@ fi
 
 SIZE="$(wc -c < "$LOCAL_ENGINE" 2>/dev/null)"
 
-if [ "$SIZE" -lt 100000 ]; then
-  printf "$R[!] File engine tidak valid atau terlalu kecil.$N\n"
-  printf "$Y[!] Hapus file lalu jalankan ulang installer.$N\n"
+if [ -z "$SIZE" ] || [ "$SIZE" -lt 100000 ]; then
+  printf "$R[!] File engine tidak valid.$N\n"
+  printf "$Y[!] Jalankan ulang installer.$N\n"
   rm -f "$LOCAL_ENGINE"
   exit 1
 fi
@@ -170,7 +167,7 @@ line
 
 printf "$B[6/6] Creating Neon Core Engine setup file...$N\n"
 
-cat > "$SETUP_FILE" << "EOF"
+cat > "$SETUP_FILE" << 'SETUPEOF'
 #!/system/bin/sh
 
 clear
@@ -225,14 +222,14 @@ chmod 755 "$CORE"
 
 if ! "$CORE" --help >/dev/null 2>&1; then
   printf "$R[!] Engine core gagal dijalankan di Android shell.$N\n"
-  printf "$Y[!] Coba jalankan ulang installer Termux, lalu ulangi setup ini.$N\n"
+  printf "$Y[!] File ada, tapi tidak bisa dieksekusi di sesi ini.$N\n"
   exit 1
 fi
 
 printf "$G[✓] Engine core installed$N\n\n"
 
 printf "$C━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$N\n"
-printf "$B[3/5] Creating Neon command shortcuts...$N\n"
+printf "$B[3/5] Creating Neon shortcuts...$N\n"
 
 mkdir -p "$BIN_DIR"
 
@@ -242,7 +239,7 @@ chmod 755 "$BIN_DIR/.core"
 cd "$BIN_DIR" || exit 1
 ./.core --install -s .
 
-cat > "$BIN_DIR/neon" << "NEONEOF"
+cat > "$BIN_DIR/neon" << 'NEONEOF'
 #!/system/bin/sh
 
 CORE="/data/local/tmp/neon-core/bin/.core"
@@ -256,7 +253,6 @@ if [ "$1" = "" ]; then
   echo "  neon wget --help"
   echo "  neon df -h"
   echo "  neon ps"
-  echo ""
   exit 0
 fi
 
@@ -275,7 +271,7 @@ printf "$G[✓] Shortcut created: neon$N\n\n"
 printf "$C━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━$N\n"
 printf "$B[4/5] Activating Neon environment...$N\n"
 
-cat > "$ENV_FILE" << "ENVEOF"
+cat > "$ENV_FILE" << 'ENVEOF'
 export PATH="/data/local/tmp/neon-core/bin:/data/local/tmp:$PATH"
 ENVEOF
 
@@ -310,17 +306,17 @@ printf "$W. /data/local/tmp/neon-core/env.sh$N\n\n"
 
 printf "$GOpening Neon shell...$N\n"
 neon shell
-EOF
+SETUPEOF
 
 chmod 755 "$SETUP_FILE"
 
-cat > "$START_FILE" << "EOF"
+cat > /sdcard/Download/neon-core-start.sh << 'STARTEOF'
 #!/system/bin/sh
 . /data/local/tmp/neon-core/env.sh
 neon shell
-EOF
+STARTEOF
 
-chmod 755 "$START_FILE"
+chmod 755 /sdcard/Download/neon-core-start.sh
 
 if command -v termux-clipboard-set >/dev/null 2>&1; then
   printf "%s" "$RUN_CMD" | termux-clipboard-set
