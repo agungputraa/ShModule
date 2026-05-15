@@ -26,18 +26,19 @@ printf "$N"
 printf "\n$Y"
 printf "╔════════════════════════════════════════════╗\n"
 printf "║        BUSYBOX INSTALLER FOR TERMUX        ║\n"
-printf "║          ANDROID SHELL TOOLKIT             ║\n"
+printf "║            NEON CORE ENGINE READY          ║\n"
 printf "╚════════════════════════════════════════════╝\n"
 printf "$N\n"
 
 printf "$W[•] Developer  : Agung Dev$N\n"
 printf "$W[•] Repository : agungputraa/ShModule$N\n"
 printf "$W[•] Target     : /sdcard/Download/busybox$N\n"
-printf "$W[•] Mode       : Termux to Brevent / ADB Shell$N\n\n"
+printf "$W[•] Mode       : Termux to Neon Core Engine$N\n\n"
 
 sleep 1
 
 printf "$B[1/6] Checking Android architecture...$N\n"
+
 ABI="$(getprop ro.product.cpu.abi 2>/dev/null)"
 
 if [ "$ABI" = "arm64-v8a" ]; then
@@ -99,7 +100,8 @@ printf "$B[4/6] Cleaning old BusyBox file...$N\n"
 cd "$HOME" || exit 1
 rm -f "$HOME/busybox"
 rm -f /sdcard/Download/busybox
-rm -f /sdcard/Download/agung_busybox_brevent.txt
+rm -f /sdcard/Download/neon_core_busybox_setup.txt
+rm -f /sdcard/Download/neon_core_busybox_env.txt
 
 printf "$G[✓] Old file cleaned$N\n\n"
 
@@ -133,7 +135,7 @@ printf "$G[✓] BusyBox downloaded and executable$N\n\n"
 
 sleep 1
 
-printf "$B[6/6] Saving BusyBox to Download folder...$N\n"
+printf "$B[6/6] Saving BusyBox and Neon Core setup command...$N\n"
 
 cp "$HOME/busybox" /sdcard/Download/busybox
 chmod 755 /sdcard/Download/busybox
@@ -143,9 +145,10 @@ if [ ! -f "/sdcard/Download/busybox" ]; then
   exit 1
 fi
 
-cat > /sdcard/Download/agung_busybox_brevent.txt << "EOF"
+cat > /sdcard/Download/neon_core_busybox_setup.txt << "EOF"
 rm -f /data/local/tmp/busybox
 rm -rf /data/local/tmp/bb
+rm -f /data/local/tmp/neon-busybox-env.sh
 cp /sdcard/Download/busybox /data/local/tmp/busybox 2>/dev/null || cat /sdcard/Download/busybox > /data/local/tmp/busybox
 chmod 755 /data/local/tmp/busybox
 mkdir -p /data/local/tmp/bb
@@ -153,9 +156,18 @@ cp /data/local/tmp/busybox /data/local/tmp/bb/busybox
 chmod 755 /data/local/tmp/bb/busybox
 cd /data/local/tmp/bb
 ./busybox --install -s .
-export PATH="/data/local/tmp/bb:$PATH"
-/data/local/tmp/bb/busybox --help
-/data/local/tmp/bb/busybox sh
+cat > /data/local/tmp/neon-busybox-env.sh << 'ENVEOF'
+export PATH="/data/local/tmp:/data/local/tmp/bb:$PATH"
+ENVEOF
+chmod 755 /data/local/tmp/neon-busybox-env.sh
+export PATH="/data/local/tmp:/data/local/tmp/bb:$PATH"
+busybox --help
+busybox sh
+EOF
+
+cat > /sdcard/Download/neon_core_busybox_env.txt << "EOF"
+export PATH="/data/local/tmp:/data/local/tmp/bb:$PATH"
+busybox sh
 EOF
 
 printf "$G[✓] BusyBox saved successfully$N\n\n"
@@ -164,12 +176,13 @@ sleep 1
 
 printf "$G"
 cat << "EOF"
-  ____                  __       
- / __ )__  __________  / /_____  __
-/ __  / / / / ___/ / / / //_/ / / /
-/ /_/ / /_/ (__  ) /_/ / ,< / /_/ / 
-/_____/\__,_/____/\__,_/_/|_|\__, /  
-                             /____/   
+  _   _                  ____               
+ | \ | | ___  ___  _ __ / ___|___  _ __ ___ 
+ |  \| |/ _ \/ _ \| '_ \ |   / _ \| '__/ _ \
+ | |\  |  __/ (_) | | | | |__| (_) | | |  __/
+ |_| \_|\___|\___/|_| |_|\____\___/|_|  \___|
+                                              
+              ENGINE READY
 EOF
 printf "$N"
 
@@ -178,8 +191,11 @@ printf "\n$G[✓] TERMUX SETUP SUCCESS$N\n\n"
 printf "$C[•] BusyBox location:$N\n"
 printf "$W    /sdcard/Download/busybox$N\n\n"
 
-printf "$C[•] Brevent command saved to:$N\n"
-printf "$W    /sdcard/Download/agung_busybox_brevent.txt$N\n\n"
+printf "$C[•] Neon Core Engine setup saved to:$N\n"
+printf "$W    /sdcard/Download/neon_core_busybox_setup.txt$N\n\n"
+
+printf "$C[•] Neon Core Engine session shortcut saved to:$N\n"
+printf "$W    /sdcard/Download/neon_core_busybox_env.txt$N\n\n"
 
 printf "$C[•] File info:$N\n"
 ls -lh /sdcard/Download/busybox
@@ -189,7 +205,7 @@ printf "\n$C[•] BusyBox test:$N\n"
 
 printf "\n$Y"
 printf "╔════════════════════════════════════════════╗\n"
-printf "║       COPY COMMAND BELOW TO BREVENT        ║\n"
+printf "║    COPY COMMAND BELOW TO NEON CORE ENGINE  ║\n"
 printf "╚════════════════════════════════════════════╝\n"
 printf "$N\n"
 
@@ -197,6 +213,7 @@ printf "$C"
 cat << "EOF"
 rm -f /data/local/tmp/busybox
 rm -rf /data/local/tmp/bb
+rm -f /data/local/tmp/neon-busybox-env.sh
 cp /sdcard/Download/busybox /data/local/tmp/busybox 2>/dev/null || cat /sdcard/Download/busybox > /data/local/tmp/busybox
 chmod 755 /data/local/tmp/busybox
 mkdir -p /data/local/tmp/bb
@@ -204,9 +221,13 @@ cp /data/local/tmp/busybox /data/local/tmp/bb/busybox
 chmod 755 /data/local/tmp/bb/busybox
 cd /data/local/tmp/bb
 ./busybox --install -s .
-export PATH="/data/local/tmp/bb:$PATH"
-/data/local/tmp/bb/busybox --help
-/data/local/tmp/bb/busybox sh
+cat > /data/local/tmp/neon-busybox-env.sh << 'ENVEOF'
+export PATH="/data/local/tmp:/data/local/tmp/bb:$PATH"
+ENVEOF
+chmod 755 /data/local/tmp/neon-busybox-env.sh
+export PATH="/data/local/tmp:/data/local/tmp/bb:$PATH"
+busybox --help
+busybox sh
 EOF
 printf "$N\n"
 
@@ -218,13 +239,30 @@ printf "$N\n"
 
 printf "$C"
 cat << "EOF"
-/data/local/tmp/bb/busybox find /sdcard -type f -size +100M
-/data/local/tmp/bb/busybox find /sdcard -type f -name "*.apk"
-/data/local/tmp/bb/busybox df -h
-/data/local/tmp/bb/busybox du -h /sdcard/Download
-/data/local/tmp/bb/busybox ps
-/data/local/tmp/bb/busybox uname -a
+busybox find /sdcard -type f -size +100M
+busybox find /sdcard -type f -name "*.apk"
+busybox df -h
+busybox du -h /sdcard/Download
+busybox ps
+busybox uname -a
+find /sdcard -type f -size +100M
+grep --help
+awk --help
+sed --help
 EOF
 printf "$N\n"
 
-printf "$G[✓] Done. Lanjut buka Brevent / ADB shell dan paste command di atas.$N\n"
+printf "$Y"
+printf "╔════════════════════════════════════════════╗\n"
+printf "║      FOR NEXT NEON CORE ENGINE SESSION     ║\n"
+printf "╚════════════════════════════════════════════╝\n"
+printf "$N\n"
+
+printf "$C"
+cat << "EOF"
+. /data/local/tmp/neon-busybox-env.sh
+busybox sh
+EOF
+printf "$N\n"
+
+printf "$G[✓] Done. Buka Neon Core Engine lalu paste command setup di atas.$N\n"
